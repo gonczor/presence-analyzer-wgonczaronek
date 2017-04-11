@@ -5,9 +5,17 @@ Defines views.
 
 import calendar
 from flask import redirect, abort
+from flask.helpers import url_for
+from flask import render_template
 
 from presence_analyzer.main import app
-from presence_analyzer.utils import jsonify, get_data, mean, group_by_weekday
+from presence_analyzer.utils import (
+    jsonify,
+    get_data,
+    mean,
+    group_by_weekday,
+    group_mean_start_end_by_weekday
+)
 
 import logging
 log = logging.getLogger(__name__)  # pylint: disable=invalid-name
@@ -18,7 +26,7 @@ def mainpage():
     """
     Redirects to front page.
     """
-    return redirect('/static/presence_weekday.html')
+    return redirect(url_for('statistics_view', chosen='presence_start_end'))
 
 
 @app.route('/api/v1/users', methods=['GET'])
@@ -36,7 +44,7 @@ def users_view():
 
 @app.route('/api/v1/mean_time_weekday/<int:user_id>', methods=['GET'])
 @jsonify
-def mean_time_weekday_view(user_id):
+def mean_time_weekday_api_view(user_id):
     """
     Returns mean presence time of given user grouped by weekday.
     """
@@ -56,7 +64,7 @@ def mean_time_weekday_view(user_id):
 
 @app.route('/api/v1/presence_weekday/<int:user_id>', methods=['GET'])
 @jsonify
-def presence_weekday_view(user_id):
+def presence_weekday_api_view(user_id):
     """
     Returns total presence time of given user grouped by weekday.
     """
@@ -73,3 +81,35 @@ def presence_weekday_view(user_id):
 
     result.insert(0, ('Weekday', 'Presence (s)'))
     return result
+
+
+@app.route('/api/v1/presence_start_end/<int:user_id>', methods=['GET'])
+@jsonify
+def presence_start_end_api_view(user_id):
+    """
+    Return json response for mean time user with given id has come to and from work.
+    """
+    data = get_data()
+    if user_id not in data:
+        log.debug('User %s not found', user_id)
+        abort(404)
+
+    weekdays = group_mean_start_end_by_weekday(data[user_id])
+
+    for day, value in weekdays.items():
+        value['start'] = value['start'].strftime('%H:%M:%S')
+        value['end'] = value['end'].strftime('%H:%M:%S')
+
+    return weekdays
+
+
+@app.route('/statistics/<chosen>/')
+def statistics_view(chosen):
+    if chosen == 'mean_time_weekday':
+        return render_template('mean_time_weekday.html')
+    elif chosen == 'presence_weekday':
+        return render_template('presence_weekday.html')
+    elif chosen == 'presence_start_end':
+        return render_template('presence_start_end.html')
+    else:
+        abort(404)
