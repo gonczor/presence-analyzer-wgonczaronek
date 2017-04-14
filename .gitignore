@@ -41,3 +41,6 @@ nosetests.xml
 
 # Pep-8 tests
 .cache
+
+# Bootstrap
+bootstrap.py
