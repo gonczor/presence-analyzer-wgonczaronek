@@ -26,7 +26,7 @@ def mainpage():
     """
     Redirects to front page.
     """
-    return redirect(url_for('presence_weekday_view'))
+    return redirect(url_for('statistics_view', chosen='presence_start_end'))
 
 
 @app.route('/api/v1/users', methods=['GET'])
@@ -103,16 +103,13 @@ def presence_start_end_api_view(user_id):
     return weekdays
 
 
-@app.route('/mean_time_weekday/')
-def mean_time_weekday_view():
-    return render_template('mean_time_weekday.html')
-
-
-@app.route('/presence_weekday/')
-def presence_weekday_view():
-    return render_template('presence_weekday.html')
-
-
-@app.route('/presence_start_end/')
-def presence_start_end_view():
-    return render_template('presence_start_end.html')
+@app.route('/statistics/<chosen>/')
+def statistics_view(chosen):
+    if chosen == 'mean_time_weekday':
+        return render_template('mean_time_weekday.html')
+    elif chosen == 'presence_weekday':
+        return render_template('presence_weekday.html')
+    elif chosen == 'presence_start_end':
+        return render_template('presence_start_end.html')
+    else:
+        abort(404)
