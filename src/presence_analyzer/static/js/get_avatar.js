@@ -14,7 +14,7 @@
 
                 $userAvatarElement.attr('src', '');
                 if($selectedUser) {
-                    $errorSection.text('User details not found.');
+                    $errorSection.text('User has insufficient data');
                 } else {
                     $errorSection.text('');
                 }
