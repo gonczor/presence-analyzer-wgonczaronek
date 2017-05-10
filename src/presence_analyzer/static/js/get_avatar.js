@@ -8,8 +8,15 @@
             $.getJSON(getAvatarUrl, function(result) {
                 $userAvatarElement.attr('src', intranetBaseUrl + result);
             }).fail(function() {
-                $userAvatarElement.attr('src', '');
-                alert('User details not found.');
+                var $errorSection = $('#error-message'),
+                    $selectedUser = $('#user_id').val();
+
+                if($selectedUser) {
+                    $userAvatarElement.attr('src', '');
+                    $errorSection.text('User details not found.');
+                } else{
+                    $errorSection.text('');
+                }
             });
         });
     });
